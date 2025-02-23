@@ -6,23 +6,23 @@ A PowerShell-based tool for efficient photo organization, allowing users to rena
 
 🖼 Image Selection & Management
 
-    Select one or multiple images for editing.
-    Add additional images dynamically.
-    Rotate images left or right.
-    Choose a destination folder to save edited files.
+Select one or multiple images for editing.
+Add additional images dynamically.
+Rotate images left or right.
+Choose a destination folder to save edited files.
 
 📝 Metadata Editing
 
-    Set a custom file name for images.
-    Add a title, subject, and description.
-    Assign tags and keywords (existing keywords are displayed for reference).
-    Modify the Date Taken property.
+Set a custom file name for images.
+Add a title, subject, and description.
+Assign tags and keywords (existing keywords are displayed for reference).
+Modify the Date Taken property.
 
 📂 Saving & Logging
 
-    Save all entered metadata to an Excel file for tracking.
-    Option to save metadata and delete the selected image.
-    Reset the tool to start fresh.
+Save all entered metadata to an Excel file for tracking.
+Option to save metadata and delete the selected image.
+Reset the tool to start fresh.
 
 📌 More features and enhancements may be added in future updates!
 
