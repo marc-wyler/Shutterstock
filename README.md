@@ -30,4 +30,5 @@ A PowerShell-based tool for efficient photo organization, allowing users to rena
 🚧 Work in Progress - Currently the Metadata can't be saved to the picture itself and will only be saved to the Excel.
 
 This project is actively being developed. Contributions, feedback, and suggestions are welcome!
-![Metadata-Editor-Preview](https://github.com/user-attachments/assets/67da8c77-f7a7-4e75-8be3-1c3fad64adcc)
+
+![Metadata-Editor-Preview](https://github.com/user-attachments/assets/8d04b2ac-aae0-4b3c-bd39-fc2ebac3f959)
