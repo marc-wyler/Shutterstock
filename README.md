@@ -1,17 +1,19 @@
-Metadata Editor (PowerShell)
-This repository contains PowerShell scripts designed to streamline photo organization by enabling bulk renaming and metadata editing.
-Features
+📷 Metadata Editor (PowerShell)
 
-Bulk-Rename-Images.ps1
-✅ Bulk Rename Photos – Rename multiple images based on a user-defined format.
+A set of PowerShell scripts designed to simplify photo organization by enabling bulk renaming and metadata editing. Ideal for photographers, archivists, and anyone managing large collections of images.
+✨ Features
+🔄 Bulk Rename Images (Bulk-Rename-Images.ps1)
 
-Shutterstock-Metadata.ps1 (executed with Start-MetadataEditor.vbs)
-✅ Edit Metadata – Modify image properties such as keywords, description, name, and date/time. -> Currently not possible, Metadata will be only added to the Excel.
-✅ Excel Event Logging – Automatically logs actions in an .xlsx file for tracking changes.
-✅ Keyword Suggestion – When a title is entered which already exists, the existing keywords will be displayed.
+    Rename multiple images based on a user-defined format.
 
-Ideal for photographers, archivists, and anyone managing large sets of images. More scripts may be added in the future!
+📝 Metadata Editing (Shutterstock-Metadata.ps1, executed via Start-MetadataEditor.vbs)
 
-=== WORK IN PROCESS ===
+    Metadata Management: Modify image properties such as keywords, descriptions, names, and timestamps. (Note: Currently, metadata is only added to the Excel file.)
+    Excel Event Logging: Automatically logs all changes in an .xlsx file for easy tracking.
+    Keyword Suggestions: When entering a title that already exists, previously used keywords are displayed for reference.
 
+📌 More scripts and features may be added in future updates!
+🚧 Work in Progress
+
+This project is actively being developed. Contributions, feedback, and suggestions are welcome!
 ![Metadata-Editor-Preview](https://github.com/user-attachments/assets/a43f93dd-15ce-4182-ac89-b5f7eef3b28e)
