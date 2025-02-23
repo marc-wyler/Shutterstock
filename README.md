@@ -3,6 +3,7 @@
 A set of PowerShell scripts designed to simplify photo organization by enabling bulk renaming and metadata editing. Ideal for photographers, archivists, and anyone managing large collections of images.
 
 ✨ Features
+
 🔄 Bulk Rename Images (Bulk-Rename-Images.ps1)
 
     Rename multiple images based on a user-defined format.
@@ -14,6 +15,7 @@ A set of PowerShell scripts designed to simplify photo organization by enabling 
     Keyword Suggestions: When entering a title that already exists, previously used keywords are displayed for reference.
 
 📌 More scripts and features may be added in future updates!
+
 🚧 Work in Progress
 
 This project is actively being developed. Contributions, feedback, and suggestions are welcome!
