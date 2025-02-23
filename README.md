@@ -10,6 +10,7 @@ A PowerShell-based tool for efficient photo organization, allowing users to rena
 - Add additional images dynamically.
 - Rotate images left or right.
 - Choose a destination folder to save edited files.
+- Get a text suggestion for AI-powered Keyword Suggestions and overall improvement of the entered data using Microsoft Copilot or an AI of your choice
 
 📝 Metadata Editing
 
