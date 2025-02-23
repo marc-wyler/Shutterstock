@@ -1,22 +1,32 @@
 📷 Metadata Editor (PowerShell)
 
-A set of PowerShell scripts designed to simplify photo organization by enabling bulk renaming and metadata editing. Ideal for photographers, archivists, and anyone managing large collections of images.
+A PowerShell-based tool for efficient photo organization, allowing users to rename, edit metadata, and manage image files with ease.
 
 ✨ Features
 
-🔄 Bulk Rename Images (Bulk-Rename-Images.ps1)
+🖼 Image Selection & Management
 
-    Rename multiple images based on a user-defined format.
+    Select one or multiple images for editing.
+    Add additional images dynamically.
+    Rotate images left or right.
+    Choose a destination folder to save edited files.
 
-📝 Metadata Editing (Shutterstock-Metadata.ps1, executed via Start-MetadataEditor.vbs)
+📝 Metadata Editing
 
-    Metadata Management: Modify image properties such as keywords, descriptions, names, and timestamps. (Note: Currently, metadata is only added to the Excel file.)
-    Excel Event Logging: Automatically logs all changes in an .xlsx file for easy tracking.
-    Keyword Suggestions: When entering a title that already exists, previously used keywords are displayed for reference.
+    Set a custom file name for images.
+    Add a title, subject, and description.
+    Assign tags and keywords (existing keywords are displayed for reference).
+    Modify the Date Taken property.
 
-📌 More scripts and features may be added in future updates!
+📂 Saving & Logging
 
-🚧 Work in Progress
+    Save all entered metadata to an Excel file for tracking.
+    Option to save metadata and delete the selected image.
+    Reset the tool to start fresh.
+
+📌 More features and enhancements may be added in future updates!
+
+🚧 Work in Progress - Currently the Metadata can't be saved to the picture itself and will only be saved to the Excel.
 
 This project is actively being developed. Contributions, feedback, and suggestions are welcome!
 ![Metadata-Editor-Preview](https://github.com/user-attachments/assets/a43f93dd-15ce-4182-ac89-b5f7eef3b28e)
