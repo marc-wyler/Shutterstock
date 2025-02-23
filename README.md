@@ -5,6 +5,8 @@ Features
 ✅ Bulk Rename Photos – Rename multiple images based on a user-defined format.
 ✅ Edit Metadata – Modify image properties such as keywords, description, name, and date/time.
 ✅ Excel Event Logging – Automatically logs actions in an .xlsx file for tracking changes.
-✅ Smart Keyword Suggestion – When an event is recorded, future images with the same name will automatically receive relevant keywords.
+✅ Keyword Suggestion – When a title is entered which already exists, the existing keywords will be displayed.
 
 Ideal for photographers, archivists, and anyone managing large sets of images. More scripts may be added in the future!
+
+![Metadata-Editor-Preview](https://github.com/user-attachments/assets/a43f93dd-15ce-4182-ac89-b5f7eef3b28e)
