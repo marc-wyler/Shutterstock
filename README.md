@@ -6,7 +6,7 @@ A PowerShell-based tool for efficient photo organization, allowing users to rena
 
 🖼 Image Selection & Management
 
-- Select one or multiple images for editing.
+- Select one image and Rename the other Selected Image after (currently not possible in the Script itself, wip)
 - Add additional images dynamically.
 - Rotate images left or right.
 - Choose a destination folder to save edited files.
