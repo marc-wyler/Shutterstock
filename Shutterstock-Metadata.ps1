@@ -92,45 +92,78 @@ function Create-MetadataEditorForm {
     # Use a bold Segoe UI font for buttons and labels
     $boldFont = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
 
+    # Change the red title label to be "Metadata Editor" at top left
+    $metadataEditorLabel = New-Object System.Windows.Forms.Label
+    $metadataEditorLabel.Text = "Metadata Editor"
+    $metadataEditorLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $metadataEditorLabel.Location = New-Object System.Drawing.Point(10,8)
+    $metadataEditorLabel.ForeColor = [System.Drawing.Color]::Red
+    $metadataEditorLabel.AutoSize = $true
+
     # Base Path Label and TextBox
     $basePathLabel = New-Object System.Windows.Forms.Label
     $basePathLabel.Text = "Base Path:"
     $basePathLabel.Font = $boldFont
-    $basePathLabel.Location = New-Object System.Drawing.Point(10,10)
+    $basePathLabel.Location = New-Object System.Drawing.Point(270,10)  # Changed from 10 to 270
     $basePathLabel.AutoSize = $true
 
     $basePathTextBox = New-Object System.Windows.Forms.TextBox
     $basePathTextBox.Font = $boldFont
-    $basePathTextBox.Location = New-Object System.Drawing.Point(80,8)
-    $basePathTextBox.Size = New-Object System.Drawing.Size(1100,25)
+    $basePathTextBox.Location = New-Object System.Drawing.Point(370,8)  # Changed from 80 to 370
+    $basePathTextBox.Size = New-Object System.Drawing.Size(550,25)  # Match width with Selected File textbox
     $basePathTextBox.ReadOnly = $true
     $basePathTextBox.Anchor = [System.Windows.Forms.AnchorStyles] "Top,Left,Right"
 
-    # Add the Pictures label above the listbox
+    # Update Pictures label position
     $picturesLabel = New-Object System.Windows.Forms.Label
-    $picturesLabel.Text = "Pictures:"
+    $picturesLabel.Text = "Picture Selection:"
     $picturesLabel.Font = $boldFont
-    $picturesLabel.Location = New-Object System.Drawing.Point(10,40)
+    $picturesLabel.Location = New-Object System.Drawing.Point(10,75)  # Changed from 40 to 75
     $picturesLabel.AutoSize = $true
 
-    # File List Box (Left Panel)
+    # Update listbox position
     $listBox = New-Object System.Windows.Forms.ListBox
     $listBox.Font = $boldFont
-    $listBox.Location = New-Object System.Drawing.Point(10,65)
+    $listBox.Location = New-Object System.Drawing.Point(10,100)  # Changed from 65 to 100 to align with picture box
     $listBox.Size = New-Object System.Drawing.Size(250,545)
     $listBox.Anchor = [System.Windows.Forms.AnchorStyles] "Top,Left,Bottom"
     foreach ($path in $global:filePaths) {
         $listBox.Items.Add([System.IO.Path]::GetFileName($path))
     }
 
-    # "Add More Pictures" Button below the list
+    # Update Add More Pictures button position
     $addPicsButton = New-Object System.Windows.Forms.Button
     $addPicsButton.Text = "Add More Pictures"
     $addPicsButton.Font = $boldFont
-    $addPicsButton.Size = New-Object System.Drawing.Size(240,35)
-    $addPicsButton.Location = New-Object System.Drawing.Point(10,620)
+    $addPicsButton.Size = New-Object System.Drawing.Size(250,35)
+    $addPicsButton.Location = New-Object System.Drawing.Point(10,655)
+    $addPicsButton.BackColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Initial color (Orange)
+    $addPicsButton.ForeColor = [System.Drawing.Color]::Black
     $addPicsButton.FlatStyle = 'Flat'
     $addPicsButton.FlatAppearance.BorderSize = 0
+
+    # Add this after creating the Add More Pictures button
+    $blinkTimer = New-Object System.Windows.Forms.Timer
+    $blinkTimer.Interval = 1000  # Blink every second
+    $blinkState = $false
+
+    $blinkTimer.Add_Tick({
+        if ($blinkState) {
+            $addPicsButton.BackColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Orange
+        } else {
+            $addPicsButton.BackColor = [System.Drawing.Color]::FromArgb(255,215,0)  # Yellow
+        }
+        $blinkState = -not $blinkState
+    })
+
+    # Start the blinking
+    $blinkTimer.Start()
+
+    # Add cleanup to form closing
+    $form.Add_FormClosing({
+        $blinkTimer.Stop()
+        $blinkTimer.Dispose()
+    })
 
     # Add the click handler for the Add More Pictures button
     $addPicsButton.Add_Click({
@@ -151,6 +184,85 @@ function Create-MetadataEditorForm {
         }
     })
 
+    # Add Bulk Rename button below Add More Pictures
+    $bulkRenameButton = New-Object System.Windows.Forms.Button
+    $bulkRenameButton.Text = "Bulk Rename"
+    $bulkRenameButton.Font = $boldFont
+    $bulkRenameButton.Size = New-Object System.Drawing.Size(250,35)
+    $bulkRenameButton.Location = New-Object System.Drawing.Point(10,700)  # Positioned below Add More Pictures
+    $bulkRenameButton.BackColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Initial color (Orange)
+    $bulkRenameButton.ForeColor = [System.Drawing.Color]::Black
+    $bulkRenameButton.FlatStyle = 'Flat'
+    $bulkRenameButton.FlatAppearance.BorderSize = 0
+
+    # Add Delete Picture button below Bulk Rename
+    $deletePictureButton = New-Object System.Windows.Forms.Button
+    $deletePictureButton.Text = "Delete Picture"
+    $deletePictureButton.Font = $boldFont
+    $deletePictureButton.Size = New-Object System.Drawing.Size(250,35)
+    $deletePictureButton.Location = New-Object System.Drawing.Point(10,745)  # Positioned below Bulk Rename
+    $deletePictureButton.BackColor = [System.Drawing.Color]::FromArgb(255,165,0)  # Initial color (Orange)
+    $deletePictureButton.ForeColor = [System.Drawing.Color]::Black
+    $deletePictureButton.FlatStyle = 'Flat'
+    $deletePictureButton.FlatAppearance.BorderSize = 0
+
+    # Add click handler for Bulk Rename button
+    $bulkRenameButton.Add_Click({
+        if ($listBox.Items.Count -eq 0) {
+            [System.Windows.Forms.MessageBox]::Show("No pictures selected for renaming.", "Info")
+            return
+        }
+
+        if ([string]::IsNullOrWhiteSpace($fileNameTextBox.Text)) {
+            [System.Windows.Forms.MessageBox]::Show("Please enter a base name in 'Edit File Name'.", "Error")
+            return
+        }
+
+        $baseName = $fileNameTextBox.Text
+        $counter = 1
+
+        foreach ($item in $listBox.Items) {
+            $originalFileName = $item.ToString()
+            $originalFilePath = $global:filePaths | Where-Object { 
+                [System.IO.Path]::GetFileName($_) -eq $originalFileName 
+            } | Select-Object -First 1
+
+            if ($originalFilePath -and (Test-Path $originalFilePath)) {
+                $directory = [System.IO.Path]::GetDirectoryName($originalFilePath)
+                $extension = [System.IO.Path]::GetExtension($originalFilePath)
+
+                # Rename all files with the same base name and a unique number
+                $newFileName = "$baseName-$counter$extension"
+                $newFilePath = Join-Path $directory $newFileName
+
+                try {
+                    Rename-Item -Path $originalFilePath -NewName $newFileName
+                    $listBox.Items[$listBox.Items.IndexOf($item)] = $newFileName
+                    $global:filePaths[$global:filePaths.IndexOf($originalFilePath)] = $newFilePath
+                    $counter++
+                } catch {
+                    # Log the error silently without showing a message box
+                    Write-Debug "Error renaming file: $originalFileName"
+                }
+            }
+        }
+
+        Show-TemporaryMessage "Bulk rename completed successfully!" 2000 ([System.Drawing.Color]::FromArgb(51,153,255))
+    })
+
+    # Add click handler for Delete Picture button
+    $deletePictureButton.Add_Click({
+        if ($listBox.SelectedItem) {
+            $selectedFileName = $listBox.SelectedItem.ToString()
+            $global:filePaths = $global:filePaths | Where-Object { 
+                [System.IO.Path]::GetFileName($_) -ne $selectedFileName 
+            }
+            $listBox.Items.Remove($selectedFileName)
+        } else {
+            [System.Windows.Forms.MessageBox]::Show("No picture selected to delete.", "Info")
+        }
+    })
+
     # Editable File Name TextBox
     $fileNameLabel = New-Object System.Windows.Forms.Label
     $fileNameLabel.Text = "Edit File Name:"
@@ -161,7 +273,7 @@ function Create-MetadataEditorForm {
     $fileNameTextBox = New-Object System.Windows.Forms.TextBox
     $fileNameTextBox.Font = $boldFont
     $fileNameTextBox.Location = New-Object System.Drawing.Point(370,38)
-    $fileNameTextBox.Size = New-Object System.Drawing.Size(400,25)  # Make smaller to fit extension box
+    $fileNameTextBox.Size = New-Object System.Drawing.Size(550,25)  # Made wider to almost touch .JPG
     $fileNameTextBox.Anchor = [System.Windows.Forms.AnchorStyles] "Top,Left,Right"
 
     # Non-editable textbox to display selected file name
@@ -174,7 +286,7 @@ function Create-MetadataEditorForm {
     $displayedFileNameTextBox = New-Object System.Windows.Forms.TextBox
     $displayedFileNameTextBox.Font = $boldFont
     $displayedFileNameTextBox.Location = New-Object System.Drawing.Point(370,68)
-    $displayedFileNameTextBox.Size = New-Object System.Drawing.Size(500,25)
+    $displayedFileNameTextBox.Size = New-Object System.Drawing.Size(550,25)  # Match width with other textboxes
     $displayedFileNameTextBox.ReadOnly = $true
     $displayedFileNameTextBox.Anchor = [System.Windows.Forms.AnchorStyles] "Top,Left,Right"
 
@@ -197,20 +309,30 @@ function Create-MetadataEditorForm {
     $excelTagsTextBox.ReadOnly = $true
     $excelTagsTextBox.ScrollBars = "Vertical"
     $excelTagsTextBox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
-    $excelTagsTextBox.Location = New-Object System.Drawing.Point(880,100)
-    $excelTagsTextBox.Size = New-Object System.Drawing.Size(380,330)  # Make slightly shorter
+    $excelTagsTextBox.Location = New-Object System.Drawing.Point(900,100)
+    $excelTagsTextBox.Size = New-Object System.Drawing.Size(360,330)  # Made slightly narrower
     $excelTagsTextBox.BackColor = [System.Drawing.Color]::FromArgb(250,250,250)
     $excelTagsTextBox.BorderStyle = "FixedSingle"
     $excelTagsTextBox.Text = "Keywords of Metadata.xlsx, Select Folder to change the filepath"
 
-    # Add keyword counter textbox
-    $keywordCountTextBox = New-Object System.Windows.Forms.TextBox
-    $keywordCountTextBox.Font = New-Object System.Drawing.Font("Segoe UI", 9)
-    $keywordCountTextBox.Location = New-Object System.Drawing.Point(880,435)  # Position below keywords box
-    $keywordCountTextBox.Size = New-Object System.Drawing.Size(380,25)
-    $keywordCountTextBox.ReadOnly = $true
-    $keywordCountTextBox.TextAlign = "MiddleRight"
-    $keywordCountTextBox.BackColor = [System.Drawing.Color]::FromArgb(240,240,240)
+    # Update AI Suggestions label position
+    $aiSuggestionsLabel = New-Object System.Windows.Forms.Label
+    $aiSuggestionsLabel.Text = "AI Suggestions:"
+    $aiSuggestionsLabel.Font = $boldFont
+    $aiSuggestionsLabel.Location = New-Object System.Drawing.Point(900,470)
+    $aiSuggestionsLabel.AutoSize = $true
+
+    # Update suggestions textbox position
+    $suggestedTagsTextBox = New-Object System.Windows.Forms.RichTextBox
+    $suggestedTagsTextBox.Multiline = $true
+    $suggestedTagsTextBox.ReadOnly = $false
+    $suggestedTagsTextBox.ScrollBars = "Vertical"
+    $suggestedTagsTextBox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
+    $suggestedTagsTextBox.Location = New-Object System.Drawing.Point(900,495)
+    $suggestedTagsTextBox.Size = New-Object System.Drawing.Size(360,235)
+    $suggestedTagsTextBox.BackColor = [System.Drawing.Color]::FromArgb(250,250,250)
+    $suggestedTagsTextBox.BorderStyle = "FixedSingle"
+    $suggestedTagsTextBox.Text = "Copilot suggestions will appear here..."
 
     # Image Rotation Buttons
     $rotateLeftButton = New-Object System.Windows.Forms.Button
@@ -435,7 +557,7 @@ function Create-MetadataEditorForm {
     $saveButton = New-Object System.Windows.Forms.Button
     $saveButton.Text = "Save Metadata"
     $saveButton.Font = $boldFont
-    $saveButton.Size = New-Object System.Drawing.Size(120,35)
+    $saveButton.Size = New-Object System.Drawing.Size(130,35)
     $saveButton.BackColor = [System.Drawing.Color]::FromArgb(51,153,255)
     $saveButton.ForeColor = [System.Drawing.Color]::White
     $saveButton.FlatStyle = 'Flat'
@@ -452,7 +574,7 @@ function Create-MetadataEditorForm {
     $saveToExcelButton = New-Object System.Windows.Forms.Button
     $saveToExcelButton.Text = "Save to Excel"
     $saveToExcelButton.Font = $boldFont
-    $saveToExcelButton.Size = New-Object System.Drawing.Size(120,35)
+    $saveToExcelButton.Size = New-Object System.Drawing.Size(130,35)
     $saveToExcelButton.BackColor = [System.Drawing.Color]::FromArgb(255,204,0)
     $saveToExcelButton.ForeColor = [System.Drawing.Color]::Black
     $saveToExcelButton.FlatStyle = 'Flat'
@@ -471,44 +593,60 @@ function Create-MetadataEditorForm {
     $infoButton.Text = "Info"
     $infoButton.Font = $boldFont
     $infoButton.Size = New-Object System.Drawing.Size(80,35)
+    $infoButton.Location = New-Object System.Drawing.Point(1150,8)  # Moved from 1200 to 1150
     $infoButton.BackColor = [System.Drawing.Color]::FromArgb(51,102,255)
     $infoButton.ForeColor = [System.Drawing.Color]::White
     $infoButton.FlatStyle = 'Flat'
     $infoButton.FlatAppearance.BorderSize = 0
+    $infoButton.Anchor = [System.Windows.Forms.AnchorStyles]::Top -bor [System.Windows.Forms.AnchorStyles]::Right
+
+    $findTagsButton = New-Object System.Windows.Forms.Button
+    $findTagsButton.Text = "Copilot Suggestions"
+    $findTagsButton.Font = $boldFont
+    $findTagsButton.Size = New-Object System.Drawing.Size(160,35)
+    $findTagsButton.BackColor = [System.Drawing.Color]::FromArgb(255,192,203)  # Pink color
+    $findTagsButton.ForeColor = [System.Drawing.Color]::Black
+    $findTagsButton.FlatStyle = 'Flat'
+    $findTagsButton.FlatAppearance.BorderSize = 0  # Remove border
+    $findTagsButton.Margin = New-Object System.Windows.Forms.Padding(20,5,20,5)
+    $findTagsButton.Cursor = 'Hand'  # Add hand cursor
+
+    $aiCheckBox = New-Object System.Windows.Forms.CheckBox
+    $aiCheckBox.Text = "AI is Open"
+    $aiCheckBox.Font = $boldFont
+    $aiCheckBox.Size = New-Object System.Drawing.Size(300,35)
+    $aiCheckBox.ForeColor = [System.Drawing.Color]::Black
+    $aiCheckBox.TextAlign = "MiddleLeft"
+    $aiCheckBox.Padding = New-Object System.Windows.Forms.Padding(0,0,0,0)
+    $aiCheckBox.Margin = New-Object System.Windows.Forms.Padding(15,5,0,5)  # Match other button margins
+    $aiCheckBox.Location = New-Object System.Drawing.Point(270,810)  # Adjusted position to fit within the frame
+
+    # Add Copy Suggestions button next to Copilot Suggestions
+    $copySuggestionsButton = New-Object System.Windows.Forms.Button
+    $copySuggestionsButton.Text = "Copy Suggestions"
+    $copySuggestionsButton.Font = $boldFont
+    $copySuggestionsButton.Size = New-Object System.Drawing.Size(160,35)
+    $copySuggestionsButton.BackColor = [System.Drawing.Color]::FromArgb(255,192,203)  # Pink color
+    $copySuggestionsButton.ForeColor = [System.Drawing.Color]::Black
+    $copySuggestionsButton.FlatStyle = 'Flat'
+    $copySuggestionsButton.FlatAppearance.BorderSize = 0
+    $copySuggestionsButton.Margin = New-Object System.Windows.Forms.Padding(20,5,20,5)
+    $copySuggestionsButton.Cursor = 'Hand'
 
     $actionPanel = New-Object System.Windows.Forms.FlowLayoutPanel
     $actionPanel.Location = New-Object System.Drawing.Point(270,760)
-    $actionPanel.Size = New-Object System.Drawing.Size(700,50)
+    $actionPanel.Size = New-Object System.Drawing.Size(1100,50)  # Made wider to fit checkbox
     $actionPanel.FlowDirection = "LeftToRight"
     $actionPanel.WrapContents = $false
-    foreach ($btn in @($saveButton, $saveToExcelButton, $resetButton, $infoButton)) {
-        $btn.Margin = New-Object System.Windows.Forms.Padding(20,5,20,5)
+    foreach ($btn in @($saveButton, $saveToExcelButton, $resetButton, $findTagsButton)) {
+        $btn.Margin = New-Object System.Windows.Forms.Padding(15,5,15,5)  # Reduce margins between buttons
     }
-    $actionPanel.Controls.AddRange(@($saveButton, $saveToExcelButton, $resetButton, $infoButton))
-
-    # Add controls to Metadata Panel
-    $metadataPanel.Controls.AddRange(@(
-        $selectedFolderPathLabel,
-        $selectedFolderPathTextBox,
-        $selectFolderButton,
-        $titleLabel,
-        $titleTextBox,
-        $subjectLabel,
-        $subjectTextBox,
-        $descriptionLabel,
-        $descriptionTextBox,
-        $descriptionInfoButton,
-        $tagsLabel,
-        $tagsTextBox,
-        $tagsInfoButton,
-        $dateLabel,
-        $dateTimePicker
-    ))
+    $actionPanel.Controls.AddRange(@($saveButton, $saveToExcelButton, $resetButton, $findTagsButton, $copySuggestionsButton, $aiCheckBox))
 
     # Create the extension textbox (keep this one, remove the duplicate later in the code)
     $fileExtensionTextBox = New-Object System.Windows.Forms.TextBox
     $fileExtensionTextBox.Font = $boldFont
-    $fileExtensionTextBox.Location = New-Object System.Drawing.Point(770,38)  # Position right after filename textbox
+    $fileExtensionTextBox.Location = New-Object System.Drawing.Point(920,38)  # Moved closer to filename textbox
     $fileExtensionTextBox.Size = New-Object System.Drawing.Size(50,25)
     $fileExtensionTextBox.Text = ".JPG"
     $fileExtensionTextBox.ReadOnly = $true
@@ -520,20 +658,40 @@ function Create-MetadataEditorForm {
     $fileNameTextBox.Size = New-Object System.Drawing.Size(400,25)  # Make smaller to fit extension box
     $fileNameTextBox.Add_TextChanged({})  # Remove any existing handlers
 
-    # Make sure both textboxes are added to the form controls (remove the duplicate Controls.AddRange later in the code)
+    # Add this definition for keywordCountTextBox
+    $keywordCountTextBox = New-Object System.Windows.Forms.Label
+    $keywordCountTextBox.Font = $boldFont
+    $keywordCountTextBox.Location = New-Object System.Drawing.Point(900,740)
+    $keywordCountTextBox.AutoSize = $true
+    $keywordCountTextBox.Text = "0/50 Keywords"
+
+    # Add the keywordCountTextBox to the form controls
+    $form.Controls.Add($keywordCountTextBox)
+
+    # Update the form controls - remove any duplicate textbox references
     $form.Controls.AddRange(@(
-        $basePathLabel, $basePathTextBox,
+        $metadataEditorLabel,  # Changed from $titleLabel to $metadataEditorLabel
+        $basePathLabel, 
+        $basePathTextBox,
         $picturesLabel,
-        $listBox, $addPicsButton,
-        $fileNameLabel, $fileNameTextBox,
-        $fileExtensionTextBox,  # Make sure this is included
-        $displayedFileNameLabel, $displayedFileNameTextBox,
+        $listBox, 
+        $addPicsButton,
+        $bulkRenameButton,  # Add Bulk Rename button
+        $deletePictureButton,  # Add Delete Picture button
+        $fileNameLabel, 
+        $fileNameTextBox,
+        $fileExtensionTextBox,
+        $displayedFileNameLabel, 
+        $displayedFileNameTextBox,
         $previewPanel,
         $excelTagsTextBox,
-        $keywordCountTextBox,  # Add the counter textbox
-        $rotateLeftButton, $rotateRightButton,
+        $aiSuggestionsLabel,
+        $suggestedTagsTextBox,
+        $rotateLeftButton, 
+        $rotateRightButton,
         $metadataPanel,
-        $actionPanel
+        $actionPanel,
+        $infoButton
     ))
 
     # ListBox Selection Changed event
@@ -546,18 +704,12 @@ function Create-MetadataEditorForm {
                 } | Select-Object -First 1
 
                 if (-not $selectedFilePath -or -not (Test-Path $selectedFilePath)) {
-                    [System.Windows.Forms.MessageBox]::Show(
-                        "Selected file not found: $selectedFileName",
-                        "Error",
-                        [System.Windows.Forms.MessageBoxButtons]::OK,
-                        [System.Windows.Forms.MessageBoxIcon]::Error
-                    )
-                    return
+                    return  # Skip processing if the file is not found
                 }
 
                 $basePathTextBox.Text = [System.IO.Path]::GetDirectoryName($selectedFilePath)
-                $baseFileName = [System.IO.Path]::GetFileNameWithoutExtension($selectedFilePath)
-                $fileNameTextBox.Text = $baseFileName
+                $baseFileName = [System.IO.Path]::GetFileNameWithoutExtension($selectedFilePath)  # Remove .jpg extension
+                $fileNameTextBox.Text = $baseFileName  # Set the file name text box
                 $displayedFileNameTextBox.Text = [System.IO.Path]::GetFileName($selectedFilePath)
 
                 # Load image
@@ -570,46 +722,51 @@ function Create-MetadataEditorForm {
                     $pictureBox.Image = $img
                 }
 
-                # Get metadata using Shell.Application
-                $shellApp = New-Object -ComObject Shell.Application
-                $folder = $shellApp.Namespace([System.IO.Path]::GetDirectoryName($selectedFilePath))
-                if ($folder) {
-                    $file = $folder.ParseName([System.IO.Path]::GetFileName($selectedFilePath))
-                    if ($file) {
-                        $titleTextBox.Text = $folder.GetDetailsOf($file, 21)
-                        $subjectTextBox.Text = $folder.GetDetailsOf($file, 24)
-                        $descriptionTextBox.Text = $folder.GetDetailsOf($file, 18)
-                        $tagsTextBox.Text = ""  # Always set Tags to empty
-                        $dateTakenStr = $folder.GetDetailsOf($file, 12)
-                        
-                        if (-not [string]::IsNullOrEmpty($dateTakenStr)) {
-                            try { 
-                                $dateTimePicker.Value = [DateTime]::Parse($dateTakenStr) 
-                            } catch { 
-                                $dateTimePicker.Value = Get-Date 
-                            }
-                        } else {
-                            $dateTimePicker.Value = Get-Date
+                # Check if the file exists in Metadata.xlsx
+                $selectedFolderPath = $selectedFolderPathTextBox.Text
+                if ($selectedFolderPath -and (Test-Path (Join-Path $selectedFolderPath "Metadata.xlsx"))) {
+                    $excelApp = New-Object -ComObject Excel.Application
+                    $excelApp.Visible = $false
+                    $excelApp.DisplayAlerts = $false
+
+                    $excelPath = Join-Path $selectedFolderPath "Metadata.xlsx"
+                    $workbook = $excelApp.Workbooks.Open($excelPath)
+                    $worksheet = $workbook.Sheets.Item(1)
+
+                    $usedRange = $worksheet.UsedRange
+                    $found = $false
+
+                    for ($row = 2; $row -le $usedRange.Rows.Count; $row++) {
+                        $excelFileName = $worksheet.Cells.Item($row, 1).Text
+                        if ($excelFileName -eq $baseFileName) {
+                            $titleTextBox.Text = $worksheet.Cells.Item($row, 1).Text
+                            $subjectTextBox.Text = $worksheet.Cells.Item($row, 2).Text
+                            $descriptionTextBox.Text = $worksheet.Cells.Item($row, 3).Text
+                            $tagsTextBox.Text = $worksheet.Cells.Item($row, 4).Text
+                            $found = $true
+                            break
                         }
                     }
+
+                    if (-not $found) {
+                        $titleTextBox.Text = ""
+                        $subjectTextBox.Text = ""
+                        $descriptionTextBox.Text = ""
+                        $tagsTextBox.Text = ""
+                    }
+
+                    # Cleanup
+                    $workbook.Close()
+                    $excelApp.Quit()
+                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($worksheet) | Out-Null
+                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($workbook) | Out-Null
+                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excelApp) | Out-Null
+                    [System.GC]::Collect()
+                    [System.GC]::WaitForPendingFinalizers()
                 }
 
-                # Reset keywords box
-                $excelTagsTextBox.Text = "Keywords of Metadata.xlsx, Select Folder to change the filepath"
-                $excelTagsTextBox.BackColor = [System.Drawing.Color]::FromArgb(250,250,250)
-
-                # Clean up COM objects
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shellApp) | Out-Null
-                [System.GC]::Collect()
-                [System.GC]::WaitForPendingFinalizers()
-
             } catch {
-                [System.Windows.Forms.MessageBox]::Show(
-                    "Error loading file: $_",
-                    "Error",
-                    [System.Windows.Forms.MessageBoxButtons]::OK,
-                    [System.Windows.Forms.MessageBoxIcon]::Error
-                )
+                Write-Debug "Error processing selected file: $_"
             }
         } else {
             # Clear everything if no selection
@@ -702,10 +859,14 @@ function Create-MetadataEditorForm {
     $selectFolderButton.Add_Click({
         $folderBrowser = New-Object System.Windows.Forms.FolderBrowserDialog
         if ($folderBrowser.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $selectedFolderPathTextBox.Text = $folderBrowser.SelectedPath
+            $selectedFolderPath = $folderBrowser.SelectedPath
+            if (-not $selectedFolderPath.EndsWith("\")) {
+                $selectedFolderPath += "\"
+            }
+            $selectedFolderPathTextBox.Text = $selectedFolderPath
             # Update keywords if we have a title
             if (-not [string]::IsNullOrWhiteSpace($titleTextBox.Text)) {
-                Update-Keywords -title $titleTextBox.Text -folderPath $folderBrowser.SelectedPath
+                Update-Keywords -title $titleTextBox.Text -folderPath $selectedFolderPath
             }
         }
     })
@@ -795,6 +956,23 @@ function Create-MetadataEditorForm {
         }
     })
 
+    # Function to update the Save Metadata button state
+    function Update-SaveButtonState {
+        if ([string]::IsNullOrWhiteSpace($fileNameTextBox.Text)) {
+            $saveButton.Enabled = $false
+        } else {
+            $saveButton.Enabled = $true
+        }
+    }
+
+    # Add TextChanged event to fileNameTextBox to update Save button state
+    $fileNameTextBox.Add_TextChanged({
+        Update-SaveButtonState
+    })
+
+    # Initial call to update the Save button state
+    Update-SaveButtonState
+
     # Update the Save Metadata button click handler
     $saveButton.Add_Click({
         if (-not $selectedFolderPathTextBox.Text) {
@@ -807,83 +985,54 @@ function Create-MetadataEditorForm {
             return
         }
 
+        if (-not $selectedFilePath -or -not (Test-Path $selectedFilePath)) {
+            [System.Windows.Forms.MessageBox]::Show("Selected file path is invalid or does not exist.", "Error")
+            return
+        }
+
         try {
-            # Show processing animation
-            $processingForm = New-Object System.Windows.Forms.Form
-            $processingForm.FormBorderStyle = 'None'
-            $processingForm.StartPosition = 'CenterParent'
-            $processingForm.Size = New-Object System.Drawing.Size(200,70)
-            $processingForm.BackColor = [System.Drawing.Color]::FromArgb(240,240,240)
-            $processingForm.TopMost = $true
-            $processingForm.Focus()
+            $selectedFolderPath = $selectedFolderPathTextBox.Text
+            if (-not $selectedFolderPath.EndsWith("\")) {
+                $selectedFolderPath += "\"
+            }
 
-            $processingLabel = New-Object System.Windows.Forms.Label
-            $processingLabel.Text = "Saving..."
-            $processingLabel.Font = New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
-            $processingLabel.TextAlign = 'MiddleCenter'
-            $processingLabel.Dock = 'Fill'
-            $processingForm.Controls.Add($processingLabel)
-            
-            $processingForm.Show()
-            $form.Enabled = $false
-
-            # Combine filename and extension for saving
             $newFileName = $fileNameTextBox.Text + $fileExtensionTextBox.Text
-            $newFilePath = Join-Path $selectedFolderPathTextBox.Text $newFileName
+            $newFilePath = Join-Path $selectedFolderPath $newFileName
 
-            # Load the image and apply rotation before saving
             $img = [System.Drawing.Image]::FromFile($selectedFilePath)
             
-            # Apply the current rotation
             switch ($global:currentRotation) {
                 90  { $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate90FlipNone) }
                 180 { $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate180FlipNone) }
                 270 { $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate270FlipNone) }
             }
 
-            # Save the rotated image
             $img.Save($newFilePath, $img.RawFormat)
             $img.Dispose()
 
-            # Update metadata using Shell.Application
             $shell = New-Object -ComObject Shell.Application
             $folder = $shell.Namespace([System.IO.Path]::GetDirectoryName($newFilePath))
             $file = $folder.ParseName([System.IO.Path]::GetFileName($newFilePath))
 
             if ($file) {
-                # Create a temporary VBS script with a proper path
                 $vbsPath = [System.IO.Path]::GetTempFileName()
                 $vbsPath = [System.IO.Path]::ChangeExtension($vbsPath, ".vbs")
 
                 $vbsContent = @"
 On Error Resume Next
-
-' Create Shell objects
 Set objShell = CreateObject("Shell.Application")
 Set objFolder = objShell.Namespace("$([System.IO.Path]::GetDirectoryName($newFilePath))")
 Set objFile = objFolder.ParseName("$([System.IO.Path]::GetFileName($newFilePath))")
-
-' Set Title
 objFolder.GetDetailsOf objFile, 21
 objFolder.SetDetailsOf objFile, 21, "$($titleTextBox.Text)"
-
-' Set Subject
 objFolder.GetDetailsOf objFile, 24
 objFolder.SetDetailsOf objFile, 24, "$($subjectTextBox.Text)"
-
-' Set Comments
 objFolder.GetDetailsOf objFile, 18
 objFolder.SetDetailsOf objFile, 18, "$($descriptionTextBox.Text)"
-
-' Set Tags
 objFolder.GetDetailsOf objFile, 25
 objFolder.SetDetailsOf objFile, 25, "$($tagsTextBox.Text)"
-
-' Set Date Taken
 objFolder.GetDetailsOf objFile, 12
 objFolder.SetDetailsOf objFile, 12, "$($dateTimePicker.Value.ToString('yyyy-MM-dd HH:mm:ss'))"
-
-' Cleanup
 Set objFile = Nothing
 Set objFolder = Nothing
 Set objShell = Nothing
@@ -891,7 +1040,6 @@ Set objShell = Nothing
                 
                 $vbsContent | Out-File -FilePath $vbsPath -Encoding ASCII
                 
-                # Execute the VBS script
                 if (Test-Path $vbsPath) {
                     $startInfo = New-Object System.Diagnostics.ProcessStartInfo
                     $startInfo.FileName = "wscript.exe"
@@ -903,189 +1051,47 @@ Set objShell = Nothing
                     $process = [System.Diagnostics.Process]::Start($startInfo)
                     $process.WaitForExit()
                     
-                    # Clean up the temporary script
                     if (Test-Path $vbsPath) {
                         Remove-Item $vbsPath -Force -ErrorAction SilentlyContinue
                     }
                 }
             }
 
-            # Clean up
             [System.Runtime.Interopservices.Marshal]::ReleaseComObject($shell) | Out-Null
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
 
-            $processingForm.Close()
-            $form.Enabled = $true
             Show-TemporaryMessage "Metadata saved successfully!" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
 
-            # Immediately load and display the updated keywords
-            if (-not [string]::IsNullOrWhiteSpace($titleTextBox.Text)) {
-                try {
-                    $excelApp = New-Object -ComObject Excel.Application
-                    $excelApp.Visible = $false
-                    $excelApp.DisplayAlerts = $false
-                    
-                    $excelPath = Join-Path $selectedFolderPathTextBox.Text "Metadata.xlsx"
-                    $workbook = $excelApp.Workbooks.Open($excelPath)
-                    $worksheet = $workbook.Sheets.Item(1)
-                    
-                    $currentTitle = $titleTextBox.Text
-                    $usedRange = $worksheet.UsedRange
-                    $found = $false
-                    
-                    for ($row = 2; $row -le $usedRange.Rows.Count; $row++) {
-                        if ($worksheet.Cells.Item($row, 1).Text -eq $currentTitle) {
-                            $keywords = $worksheet.Cells.Item($row, 4).Text -split ',' | 
-                                ForEach-Object { $_.Trim() } | 
-                                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
-                            Format-KeywordsDisplay -title $currentTitle -keywords $keywords
-                            Update-KeywordCount -keywords $keywords
-                            $excelTagsTextBox.BackColor = [System.Drawing.Color]::FromArgb(240,255,240)
-                            $found = $true
-                            break
-                        }
-                    }
-                    
-                    if (-not $found) {
-                        Format-KeywordsDisplay -title $currentTitle -keywords @()
-                        Update-KeywordCount -keywords @()
-                        $excelTagsTextBox.BackColor = [System.Drawing.Color]::FromArgb(250,250,250)
-                    }
-                    
-                    # Cleanup
-                    $workbook.Close()
-                    $excelApp.Quit()
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($worksheet) | Out-Null
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($workbook) | Out-Null
-                    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excelApp) | Out-Null
-                    [System.GC]::Collect()
-                    [System.GC]::WaitForPendingFinalizers()
-                    
-                } catch {
-                    Write-Debug "Error updating keywords display: $_"
+            $currentIndex = $listBox.SelectedIndex
+            $currentItem = $listBox.SelectedItem
+            if ($currentItem) {
+                $global:filePaths = $global:filePaths | Where-Object { 
+                    [System.IO.Path]::GetFileName($_) -ne $currentItem 
                 }
+                $listBox.Items.RemoveAt($currentIndex)
             }
 
-            # Automatically save to Excel after metadata save
-            try {
-                $excelPath = Join-Path $selectedFolderPathTextBox.Text "Metadata.xlsx"
-                $excel = New-Object -ComObject Excel.Application
-                $excel.Visible = $false
-                $excel.DisplayAlerts = $false
-
-                # Create or open workbook
-                if (Test-Path $excelPath) {
-                    $workbook = $excel.Workbooks.Open($excelPath)
+            if ($listBox.Items.Count -gt 0) {
+                if ($currentIndex -ge $listBox.Items.Count) {
+                    $listBox.SelectedIndex = $listBox.Items.Count - 1
                 } else {
-                    $workbook = $excel.Workbooks.Add()
-                    # Add headers for new file
-                    $headers = @("Title", "Subject", "Description", "Tags")
-                    for ($i = 0; $i -lt $headers.Count; $i++) {
-                        $worksheet.Cells.Item(1, $i + 1) = $headers[$i]
-                    }
+                    $listBox.SelectedIndex = $currentIndex
                 }
-                
-                $worksheet = $workbook.Sheets.Item(1)
-                $lastRow = $worksheet.UsedRange.Rows.Count
-                if ($lastRow -lt 1) { $lastRow = 1 }
-
-                # Check if title exists
-                $titleExists = $false
-                $existingRow = 0
-                for ($i = 2; $i -le $lastRow; $i++) {
-                    if ($worksheet.Cells.Item($i, 1).Text -eq $titleTextBox.Text) {
-                        $titleExists = $true
-                        $existingRow = $i
-                        break
-                    }
-                }
-
-                if ($titleExists) {
-                    # Merge existing and new tags
-                    $existingTags = $worksheet.Cells.Item($existingRow, 4).Text
-                    $newTags = $tagsTextBox.Text
-                    
-                    # Combine tags, split by comma, trim, remove empties, and remove duplicates
-                    $allTags = @()
-                    if ($existingTags) { $allTags += $existingTags -split ',' | ForEach-Object { $_.Trim() } }
-                    if ($newTags) { $allTags += $newTags -split ',' | ForEach-Object { $_.Trim() } }
-                    $uniqueTags = $allTags | Where-Object { $_ } | Select-Object -Unique | Sort-Object
-
-                    # Update row with merged tags
-                    $worksheet.Cells.Item($existingRow, 2) = $subjectTextBox.Text
-                    $worksheet.Cells.Item($existingRow, 3) = $descriptionTextBox.Text
-                    $worksheet.Cells.Item($existingRow, 4) = ($uniqueTags -join ", ")
-                } else {
-                    # Add new row
-                    $newRow = $lastRow + 1
-                    $worksheet.Cells.Item($newRow, 1) = $titleTextBox.Text
-                    $worksheet.Cells.Item($newRow, 2) = $subjectTextBox.Text
-                    $worksheet.Cells.Item($newRow, 3) = $descriptionTextBox.Text
-                    $worksheet.Cells.Item($newRow, 4) = $tagsTextBox.Text
-                }
-
-                # Auto-fit columns
-                $worksheet.UsedRange.Columns.AutoFit()
-
-                # Save and close
-                $workbook.SaveAs($excelPath)
-                $workbook.Close()
-                $excel.Quit()
-
-                # Clean up
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($worksheet) | Out-Null
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($workbook) | Out-Null
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
-                [System.GC]::Collect()
-                [System.GC]::WaitForPendingFinalizers()
-
-                # Update keywords display with merged tags
-                if (-not [string]::IsNullOrWhiteSpace($titleTextBox.Text)) {
-                    $excelTagsTextBox.Text = Format-KeywordsDisplay -title $titleTextBox.Text -keywords $uniqueTags
-                }
-
-                # After successful save, move to next image and remove the current one
-                $currentIndex = $listBox.SelectedIndex
-                $currentItem = $listBox.SelectedItem
-                if ($currentItem) {
-                    # Remove the current item from both the listbox and global paths
-                    $global:filePaths = $global:filePaths | Where-Object { 
-                        [System.IO.Path]::GetFileName($_) -ne $currentItem 
-                    }
-                    $listBox.Items.RemoveAt($currentIndex)
-                }
-
-                # Select next item or clear if none left
-                if ($listBox.Items.Count -gt 0) {
-                    if ($currentIndex -ge $listBox.Items.Count) {
-                        $listBox.SelectedIndex = $listBox.Items.Count - 1
-                    } else {
-                        $listBox.SelectedIndex = $currentIndex
-                    }
-                } else {
-                    # If no items left, clear everything
-                    $listBox.SelectedIndex = -1
-                    $pictureBox.Image = $null
-                    $titleTextBox.Text = ""
-                    $subjectTextBox.Text = ""
-                    $descriptionTextBox.Text = ""
-                    $tagsTextBox.Text = ""
-                    $dateTimePicker.Value = Get-Date
-                    $fileNameTextBox.Text = ""
-                    $displayedFileNameTextBox.Text = ""
-                    Show-TemporaryMessage "All images processed" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
-                }
-
-            } catch {
-                Write-Debug "Error saving to Excel: $_"
+            } else {
+                $listBox.SelectedIndex = -1
+                $pictureBox.Image = $null
+                $titleTextBox.Text = ""
+                $subjectTextBox.Text = ""
+                $descriptionTextBox.Text = ""
+                $tagsTextBox.Text = ""
+                $dateTimePicker.Value = Get-Date
+                $fileNameTextBox.Text = ""
+                $displayedFileNameTextBox.Text = ""
+                Show-TemporaryMessage "All images processed" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
             }
-        }
-        catch {
-            if ($processingForm) {
-                $processingForm.Close()
-            }
-            $form.Enabled = $true
+
+        } catch {
             [System.Windows.Forms.MessageBox]::Show("Error saving metadata: $_", "Error")
         }
     })
@@ -1113,7 +1119,7 @@ Set objShell = Nothing
     $infoButton.Add_Click({
         $infoForm = New-Object System.Windows.Forms.Form
         $infoForm.Text = "Tool Guide"
-        $infoForm.Size = New-Object System.Drawing.Size(600,400)
+        $infoForm.Size = New-Object System.Drawing.Size(800,600)  # Made form larger
         $infoForm.StartPosition = "CenterParent"
         $infoForm.BackColor = [System.Drawing.Color]::White
         $infoForm.FormBorderStyle = 'FixedSingle'
@@ -1125,44 +1131,68 @@ Set objShell = Nothing
         $headerLabel.Text = "Image Metadata Editor - User Guide"
         $headerLabel.Font = New-Object System.Drawing.Font("Segoe UI",14,[System.Drawing.FontStyle]::Bold)
         $headerLabel.AutoSize = $true
-        $headerLabel.Location = New-Object System.Drawing.Point(10,10)
+        $headerLabel.Location = New-Object System.Drawing.Point(20,20)
         $infoForm.Controls.Add($headerLabel)
 
         $guideRichTextBox = New-Object System.Windows.Forms.RichTextBox
-        $guideRichTextBox.Location = New-Object System.Drawing.Point(10,50)
-        $guideRichTextBox.Size = New-Object System.Drawing.Size(560,280)
-        $guideRichTextBox.Font = New-Object System.Drawing.Font("Segoe UI",10)
+        $guideRichTextBox.Location = New-Object System.Drawing.Point(20,60)
+        $guideRichTextBox.Size = New-Object System.Drawing.Size(740,420)  # Made textbox larger
+        $guideRichTextBox.Font = New-Object System.Drawing.Font("Segoe UI",11)  # Increased font size
         $guideRichTextBox.ReadOnly = $true
-        $guideRichTextBox.BorderStyle = 'FixedSingle'
+        $guideRichTextBox.BorderStyle = 'None'
+        $guideRichTextBox.BackColor = [System.Drawing.Color]::White
         $guideRichTextBox.Text = @"
-This tool allows you to:
+This tool helps you manage and edit image metadata for Shutterstock submissions. Here's what you can do:
 
-- View and edit metadata of image files (Title, Event/Subject, Description, Tags, Date Taken).
-- Edit the file name.
-- Save the updated metadata to a new file in a selected folder.
-- Continuously update keywords in an Excel file (Metadata.xlsx) when a Save Folder is selected.
-- Rotate images if they are oriented vertically.
-- Add more images or a whole folder to the list.
-- Reset the tool to clear selections and restart.
+Image Management:
+- View and select multiple images from your computer
+- Preview images in the central panel
+- Rotate images if needed using the rotation buttons
+- Add more images to the list at any time
 
-Note: Keywords in the Tags field must be separated by a comma.
+Metadata Editing:
+- Edit basic file information:
+  - Filename (with automatic .JPG extension)
+  - Title
+  - Subject
+  - Description (limited to 200 characters)
+  - Tags/Keywords
+  - Date Taken
 
-For more information:
+Keyword Management:
+- Save keywords to Excel for reuse
+- View existing keywords for similar images
+- Get AI-powered keyword suggestions using Microsoft Copilot
+- Track keyword count (maximum 50 keywords allowed)
+- Keywords are automatically deduplicated
+
+Saving and Organization:
+- Save metadata directly to images
+- Maintain a keyword database in Excel
+- Automatically remove processed images from the list
+- Reset the tool to start fresh
+
+Tips:
+- Always separate keywords with commas
+- Use the 'AI Open (will prevent open a new tab)' checkbox to prevent multiple Copilot windows
+- Check the keyword count to stay within Shutterstock's limits
+- Save regularly to Excel to build your keyword database
+
+For more information and updates:
 Github Repository: https://github.com/marc-wyler/Shutterstock
-
-
 "@
         $infoForm.Controls.Add($guideRichTextBox)
 
         $okButton = New-Object System.Windows.Forms.Button
         $okButton.Text = "Close"
         $okButton.Font = New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
-        $okButton.Size = New-Object System.Drawing.Size(80,35)
-        $okButton.Location = New-Object System.Drawing.Point(490,320)
+        $okButton.Size = New-Object System.Drawing.Size(100,35)
+        $okButton.Location = New-Object System.Drawing.Point(660,500)  # Adjusted position
         $okButton.BackColor = [System.Drawing.Color]::FromArgb(51,153,255)
         $okButton.ForeColor = [System.Drawing.Color]::White
         $okButton.FlatStyle = 'Flat'
         $okButton.FlatAppearance.BorderSize = 0
+        $okButton.TextAlign = 'MiddleCenter'
         $okButton.Add_Click({ $infoForm.Close() })
         $infoForm.Controls.Add($okButton)
 
@@ -1324,6 +1354,41 @@ Github Repository: https://github.com/marc-wyler/Shutterstock
             $keywordCountTextBox.Text = "$count/$maxKeywords Keywords"
         }
     }
+
+    # Update the Find Tags button click handler
+    $findTagsButton.Add_Click({
+        try {
+            if (-not $aiCheckBox.Checked) {
+                Start-Process "https://copilot.microsoft.com"
+            }
+            
+            $template = @"
+Write me a description for an image which I want to sell on Shutterstock. The description should contain max. 200 characters and max. 50 keywords (keep it humanlike, perfect for a stock website, and do not repeat yourself while finding keywords).
+
+File Name: "$($fileNameTextBox.Text)"
+Title: "$($titleTextBox.Text)"
+Subject: "$($subjectTextBox.Text)"
+Description: "$($descriptionTextBox.Text)"
+Tags: "$($tagsTextBox.Text)"
+
+It's important that you support me with good keywords so the image can be perfectly advertised.
+"@
+            
+            [System.Windows.Forms.Clipboard]::SetText($template)
+            Show-TemporaryMessage "Template copied to clipboard" 2000 ([System.Drawing.Color]::FromArgb(51,153,255))
+            $suggestedTagsTextBox.Text = $template
+            
+        } catch {
+            [System.Windows.Forms.MessageBox]::Show("Error opening Copilot: $_", "Error")
+        }
+    })
+
+    # Add click handler for Copy Suggestions button
+    $copySuggestionsButton.Add_Click({
+        $template = $suggestedTagsTextBox.Text
+        [System.Windows.Forms.Clipboard]::SetText($template)
+        Show-TemporaryMessage "Suggestions copied to clipboard" 2000 ([System.Drawing.Color]::FromArgb(51,153,255))
+    })
 
     [System.Windows.Forms.Application]::Run($form)
 }
