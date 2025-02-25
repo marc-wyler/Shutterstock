@@ -1,4 +1,4 @@
-📷 Metadata Editor (PowerShell)
+📷 Metadata Editor (PowerShell) + Bulk Rename (will be integrated into Metadata Editor)
 
 A PowerShell-based tool for efficient photo organization, allowing users to rename, edit metadata, and manage image files with ease.
 
