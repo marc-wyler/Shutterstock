@@ -1,7 +1,7 @@
 ##########################################################################################
 ## Author: Marc Wyler                                                                   ##
 ## Created: 14.02.2025                                                                  ##
-## Shutterstock Portfolio: https://www.shutterstock.com/g/Capture+Sunny?rid=460175361   ##
+## Portfolio: https://wirestock.io/marc.wyler                                           ##
 ##########################################################################################
 
 # Open an explorer window to select the folder
