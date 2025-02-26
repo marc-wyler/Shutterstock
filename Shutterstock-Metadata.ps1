@@ -273,8 +273,7 @@ function Create-MetadataEditorForm {
     $fileNameTextBox = New-Object System.Windows.Forms.TextBox
     $fileNameTextBox.Font = $boldFont
     $fileNameTextBox.Location = New-Object System.Drawing.Point(370,38)
-    $fileNameTextBox.Size = New-Object System.Drawing.Size(550,25)  # Made wider to almost touch .JPG
-    $fileNameTextBox.Anchor = [System.Windows.Forms.AnchorStyles] "Top,Left,Right"
+    $fileNameTextBox.Size = New-Object System.Drawing.Size(200,25)
 
     # Non-editable textbox to display selected file name
     $displayedFileNameLabel = New-Object System.Windows.Forms.Label
@@ -511,12 +510,11 @@ function Create-MetadataEditorForm {
     # Update the controls order in the Metadata Panel
     $metadataPanel.Controls.Clear()
     $metadataPanel.Controls.AddRange(@(
-        # Save Folder controls first
         $selectedFolderPathLabel,
         $selectedFolderPathTextBox,
         $selectFolderButton,
-        
-        # Then the rest of the controls
+        $fileNameLabel,
+        $fileNameTextBox,
         $titleLabel,
         $titleTextBox,
         $subjectLabel,
@@ -555,7 +553,7 @@ function Create-MetadataEditorForm {
 
     # Bottom Action Buttons (centered in a FlowLayoutPanel)
     $saveButton = New-Object System.Windows.Forms.Button
-    $saveButton.Text = "Save Metadata"
+    $saveButton.Text = "Save"
     $saveButton.Font = $boldFont
     $saveButton.Size = New-Object System.Drawing.Size(130,35)
     $saveButton.BackColor = [System.Drawing.Color]::FromArgb(51,153,255)
@@ -985,20 +983,16 @@ function Create-MetadataEditorForm {
             return
         }
 
-        if (-not $selectedFilePath -or -not (Test-Path $selectedFilePath)) {
-            [System.Windows.Forms.MessageBox]::Show("Selected file path is invalid or does not exist.", "Error")
-            return
-        }
-
         try {
             $selectedFolderPath = $selectedFolderPathTextBox.Text
             if (-not $selectedFolderPath.EndsWith("\")) {
                 $selectedFolderPath += "\"
             }
 
-            $newFileName = $fileNameTextBox.Text + $fileExtensionTextBox.Text
+            $newFileName = $fileNameTextBox.Text + ".JPG"
             $newFilePath = Join-Path $selectedFolderPath $newFileName
 
+            # Create a new image file
             $img = [System.Drawing.Image]::FromFile($selectedFilePath)
             
             switch ($global:currentRotation) {
@@ -1061,38 +1055,10 @@ Set objShell = Nothing
             [System.GC]::Collect()
             [System.GC]::WaitForPendingFinalizers()
 
-            Show-TemporaryMessage "Metadata saved successfully!" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
-
-            $currentIndex = $listBox.SelectedIndex
-            $currentItem = $listBox.SelectedItem
-            if ($currentItem) {
-                $global:filePaths = $global:filePaths | Where-Object { 
-                    [System.IO.Path]::GetFileName($_) -ne $currentItem 
-                }
-                $listBox.Items.RemoveAt($currentIndex)
-            }
-
-            if ($listBox.Items.Count -gt 0) {
-                if ($currentIndex -ge $listBox.Items.Count) {
-                    $listBox.SelectedIndex = $listBox.Items.Count - 1
-                } else {
-                    $listBox.SelectedIndex = $currentIndex
-                }
-            } else {
-                $listBox.SelectedIndex = -1
-                $pictureBox.Image = $null
-                $titleTextBox.Text = ""
-                $subjectTextBox.Text = ""
-                $descriptionTextBox.Text = ""
-                $tagsTextBox.Text = ""
-                $dateTimePicker.Value = Get-Date
-                $fileNameTextBox.Text = ""
-                $displayedFileNameTextBox.Text = ""
-                Show-TemporaryMessage "All images processed" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
-            }
+            Show-TemporaryMessage "File saved successfully!" 1000 ([System.Drawing.Color]::FromArgb(0,153,76))
 
         } catch {
-            [System.Windows.Forms.MessageBox]::Show("Error saving metadata: $_", "Error")
+            [System.Windows.Forms.MessageBox]::Show("Error saving file: $_", "Error")
         }
     })
 
@@ -1149,9 +1115,11 @@ Image Management:
 - Preview images in the central panel
 - Rotate images if needed using the rotation buttons
 - Add more images to the list at any time
+- Bulk rename images (not yet implemented)
+- Delete images from the list
 
 Metadata Editing:
-- Edit basic file information:
+- Edit basic file information (not yet implemented):
   - Filename (with automatic .JPG extension)
   - Title
   - Subject
@@ -1161,15 +1129,15 @@ Metadata Editing:
 
 Keyword Management:
 - Save keywords to Excel for reuse
-- View existing keywords for similar images
-- Get AI-powered keyword suggestions using Microsoft Copilot
+- View existing keywords for similar images when entered the same name
+- Get AI-powered keyword suggestions using Microsoft Copilot (not yet implemented / suggestion will be copied to clipboard - copy into AI)
 - Track keyword count (maximum 50 keywords allowed)
 - Keywords are automatically deduplicated
 
 Saving and Organization:
-- Save metadata directly to images
+- Save metadata directly to images (not yet implemented)
 - Maintain a keyword database in Excel
-- Automatically remove processed images from the list
+- Automatically remove processed images from the list (not yet implemented)
 - Reset the tool to start fresh
 
 Tips:
@@ -1389,6 +1357,14 @@ It's important that you support me with good keywords so the image can be perfec
         [System.Windows.Forms.Clipboard]::SetText($template)
         Show-TemporaryMessage "Suggestions copied to clipboard" 2000 ([System.Drawing.Color]::FromArgb(51,153,255))
     })
+
+    # Set default save folder path
+    $selectedFolderPathTextBox.Text = "C:\Shutterstock Upload\"
+
+    # Ensure the folder exists
+    if (-not (Test-Path $selectedFolderPathTextBox.Text)) {
+        New-Item -Path $selectedFolderPathTextBox.Text -ItemType Directory | Out-Null
+    }
 
     [System.Windows.Forms.Application]::Run($form)
 }
